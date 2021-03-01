@@ -10,9 +10,8 @@ model:
 
 dataset:
   name: CustomDatasetLoader
-  train_csv: data/train.csv 
-  valid_csv: data/valid.csv
-  image_folder: F:/Dev/X-ray/VinBigData-dataset/JPEGImages
+  root: data
+  images_folder: data/JPEGImages
   batch_size: 2
   image_size: 1024 
   num_workers: 4

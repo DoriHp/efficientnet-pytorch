@@ -23,16 +23,16 @@ class CSVLoader(data.Dataset):
     def __getitem__(self, index):
         filename = self.df[index, "filename"]
         label = self.class2index[self.df[index, "label"]]
-        image = Image.open(os.path.join(self.images_folder, filename))
+        image = Image.open(os.path.join(self.images_folder, filename + ".jpg"))
         if self.transform is not None:
             image = self.transform(image)
         return image, label
 
 @mlconfig.register
-class CustomDatasetLoader():
+class CustomDatasetLoader(data.DataLoader):
 
     def __init__(self,
-                 csv_path: str,
+                 root: str,
                  images_folder: str,
                  image_size: int,
                  train: bool,
@@ -57,6 +57,8 @@ class CustomDatasetLoader():
                 transforms.ToTensor(),
                 normalize,
             ])
+
+        csv_path = os.path.join(root, "train.csv") if train else os.path.join(root, "valid.csv")
 
         dataset = CSVLoader(csv_path=csv_path, images_folder=images_folder, transform=transform)
 

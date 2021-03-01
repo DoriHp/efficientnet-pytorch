@@ -58,13 +58,11 @@ def main():
 
 	optimizer = config.optimizer(model.parameters())
 	scheduler = config.scheduler(optimizer)
-	if config.dataset.name != "CustomDatasetLoader":
-		train_loader = config.dataset(train=True)
-		valid_loader = config.dataset(train=False)
-	else:
-		train_loader = config.dataset(csv_path=config.dataset.train_csv, image_folder=config.dataset.image_folder, train=True)
-		valid_loader = config.dataset(csv_path=config.dataset.valid_csv, image_folder=config.dataset.image_folder, train=False)
-		
+	'''
+	train_loader = config.dataset(train=True)
+	valid_loader = config.dataset(train=False)
+	
+	'''	
 	trainer = config.trainer(model, optimizer, train_loader, valid_loader, scheduler, device, args.log_dir)
 
 	if args.resume is not None:
