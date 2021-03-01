@@ -21,9 +21,9 @@ class CSVLoader(data.Dataset):
         return len(self.df)
 
     def __getitem__(self, index):
-        filename = self.df[index, "filename"]
-        label = self.class2index[self.df[index, "label"]]
-        image = Image.open(os.path.join(self.images_folder, filename + ".jpg"))
+        filename = self.df["filename"][index]
+        label = self.class2index[self.df["label"][index]]
+        image = Image.open(os.path.join(self.images_folder, filename + ".jpg")).convert("RGB")
         if self.transform is not None:
             image = self.transform(image)
         return image, label

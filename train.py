@@ -63,7 +63,7 @@ def main():
 	valid_loader = config.dataset(train=False)
 	
 	'''	
-	trainer = config.trainer(model, optimizer, train_loader, valid_loader, scheduler, device, args.log_dir)
+	trainer = config.trainer(model, optimizer, train_loader, valid_loader, scheduler, device)
 
 	if args.resume is not None:
 		trainer.resume(args.resume)

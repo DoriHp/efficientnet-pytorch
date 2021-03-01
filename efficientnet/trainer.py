@@ -56,14 +56,14 @@ class Trainer(AbstractTrainer):
             train_loss, train_acc = self.train()
             valid_loss, valid_acc = self.evaluate()
 
-            self.writer.add_scalar("train/loss", train_loss, self.epoch)
-            self.writer.add_scalar("train/acc", train_acc, self.epoch)
+            self.writer.add_scalar("train/loss", train_loss.value, self.epoch)
+            self.writer.add_scalar("train/acc", train_acc.value, self.epoch)
 
             for param_group in self.optimizer.param_groups:
-                self.writer.add_scalar("train/lr", param_group['lr'], self.epoch)
+                self.writer.add_scalar("train/lr", float(param_group['lr']), self.epoch)
 
-            self.writer.add_scalar("valid/loss", valid_loss, self.epoch)
-            self.writer.add_scalar("valid/acc", valid_acc, self.epoch)
+            self.writer.add_scalar("valid/loss", valid_loss.value, self.epoch)
+            self.writer.add_scalar("valid/acc", valid_acc.value, self.epoch)
 
             self.save_checkpoint(os.path.join(self.output_dir, 'checkpoint.pth'))
             if valid_acc > self.best_acc:
