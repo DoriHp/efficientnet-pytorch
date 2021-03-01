@@ -10,7 +10,7 @@ from torch.utils import data
 from tqdm import tqdm, trange
 
 from .metrics import Accuracy, Average
-
+from torch.utils.tensorboard import SummaryWriter
 
 class AbstractTrainer(metaclass=ABCMeta):
 
@@ -32,7 +32,7 @@ class Trainer(AbstractTrainer):
 
     def __init__(self, model: nn.Module, optimizer: optim.Optimizer, train_loader: data.DataLoader,
                  valid_loader: data.DataLoader, scheduler: optim.lr_scheduler._LRScheduler, device: torch.device,
-                 num_epochs: int, output_dir: str):
+                 log_dir: str, num_epochs: int, output_dir: str):
         self.model = model
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -41,17 +41,29 @@ class Trainer(AbstractTrainer):
         self.device = device
         self.num_epochs = num_epochs
         self.output_dir = output_dir
+        # Tensorboard writer
+        self.writer = SummaryWriter(log_dir)
 
         self.epoch = 1
         self.best_acc = 0
 
     def fit(self):
+
         epochs = trange(self.epoch, self.num_epochs + 1, desc='Epoch', ncols=0)
         for self.epoch in epochs:
             self.scheduler.step()
 
             train_loss, train_acc = self.train()
             valid_loss, valid_acc = self.evaluate()
+
+            self.writer.add_scalar("train/loss", train_loss, self.epoch)
+            self.writer.add_scalar("train/acc", train_acc, self.epoch)
+
+            for param_group in self.optimizer.param_groups:
+                self.writer.add_scalar("train/lr", param_group['lr'], self.epoch)
+
+            self.writer.add_scalar("valid/loss", valid_loss, self.epoch)
+            self.writer.add_scalar("valid/acc", valid_acc, self.epoch)
 
             self.save_checkpoint(os.path.join(self.output_dir, 'checkpoint.pth'))
             if valid_acc > self.best_acc:
