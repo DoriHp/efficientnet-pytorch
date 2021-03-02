@@ -11,9 +11,8 @@ import pandas as pd
 from ..utils import distributed_is_initialized
 
 class CSVLoader(data.Dataset):
-    def __init__(self, csv_path, images_folder, transform = None):
+    def __init__(self, csv_path, transform = None):
         self.df = pd.read_csv(csv_path)
-        self.images_folder = images_folder
         self.transform = transform
         self.class2index = {"normal": 0, "abnormal": 1}
 
@@ -23,7 +22,7 @@ class CSVLoader(data.Dataset):
     def __getitem__(self, index):
         filename = self.df["filename"][index]
         label = self.class2index[self.df["label"][index]]
-        image = Image.open(os.path.join(self.images_folder, filename + ".jpg")).convert("RGB")
+        image = Image.open(filename).convert("RGB")
         if self.transform is not None:
             image = self.transform(image)
         return image, label
@@ -33,7 +32,6 @@ class CustomDatasetLoader(data.DataLoader):
 
     def __init__(self,
                  root: str,
-                 images_folder: str,
                  image_size: int,
                  train: bool,
                  batch_size: int,
@@ -60,7 +58,7 @@ class CustomDatasetLoader(data.DataLoader):
 
         csv_path = os.path.join(root, "train.csv") if train else os.path.join(root, "valid.csv")
 
-        dataset = CSVLoader(csv_path=csv_path, images_folder=images_folder, transform=transform)
+        dataset = CSVLoader(csv_path=csv_path, transform=transform)
 
         sampler = None
         if train and distributed_is_initialized():

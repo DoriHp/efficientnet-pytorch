@@ -2,7 +2,7 @@
 # @Author: bao
 # @Date:   2021-03-01 15:02:26
 # @Last Modified by:   bao
-# @Last Modified time: 2021-03-01 15:40:03
+# @Last Modified time: 2021-03-01 15:54:21
 
 # Read label from original csv file, then divide dataset in to 2 classes dataset (normal and abnormal)
 # Output file format
@@ -30,7 +30,7 @@ def generator(root_folder):
 	valid_list = [os.path.join(valid_dir, f) for f in os.listdir(valid_dir) if f.endswith(".txt")]
 
 	with open("../../data/train.csv", "w") as writer:
-		write_string = ""
+		write_string = "filename,label\n"
 		for f in tqdm(train_list, total=len(train_list), desc="Generating train set"):
 			if os.stat(f).st_size == 0:
 				write_string += "%s,normal\n" %f.replace(".txt", ".jpg")
@@ -39,7 +39,7 @@ def generator(root_folder):
 		writer.write(write_string)
 
 	with open("../../data/valid.csv", "w") as writer:
-		write_string = ""
+		write_string = "filename,label\n"
 		for f in tqdm(valid_list, total=len(valid_list), desc="Generating valid set"):
 			if os.stat(f).st_size == 0:
 				write_string += "%s,normal\n" %f.replace(".txt", ".jpg")

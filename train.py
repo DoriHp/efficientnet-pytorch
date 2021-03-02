@@ -9,7 +9,7 @@ from efficientnet.utils import distributed_is_initialized
 
 def parse_args():
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-c', '--config', type=str, default='configs/mnist.yaml')
+	parser.add_argument('-c', '--config', type=str, required=True)
 	parser.add_argument('--resume', type=str, default=None)
 	parser.add_argument('--no-cuda', action='store_true')
 	parser.add_argument('--data-parallel', action='store_true')
@@ -41,7 +41,7 @@ def main():
 	config = mlconfig.load(args.config)
 	print(config)
 
-	'''
+	
 	if args.world_size > 1:
 		init_process(args.backend, args.init_method, args.world_size, args.rank)
 
@@ -58,18 +58,18 @@ def main():
 
 	optimizer = config.optimizer(model.parameters())
 	scheduler = config.scheduler(optimizer)
-	'''
+
 	train_loader = config.dataset(train=True)
 	valid_loader = config.dataset(train=False)
 	
-	'''	
+	
 	trainer = config.trainer(model, optimizer, train_loader, valid_loader, scheduler, device)
 
 	if args.resume is not None:
 		trainer.resume(args.resume)
 
 	trainer.fit()
-	'''
+	
 
 if __name__ == "__main__":
 	main()

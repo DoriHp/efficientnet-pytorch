@@ -32,6 +32,5 @@ def main():
         test_output(model, s)
         print_num_parameters(model)
 
-
 if __name__ == "__main__":
     main()

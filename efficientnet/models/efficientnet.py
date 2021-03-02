@@ -220,32 +220,32 @@ def _efficientnet(arch, pretrained, progress, **kwargs):
 
 
 @mlconfig.register
-def efficientnet_b0(pretrained=False, progress=True, **kwargs):
+def efficientnet_b0(pretrained=True, progress=True, **kwargs):
     return _efficientnet('efficientnet_b0', pretrained, progress, **kwargs)
 
 
 @mlconfig.register
-def efficientnet_b1(pretrained=False, progress=True, **kwargs):
+def efficientnet_b1(pretrained=True, progress=True, **kwargs):
     return _efficientnet('efficientnet_b1', pretrained, progress, **kwargs)
 
 
 @mlconfig.register
-def efficientnet_b2(pretrained=False, progress=True, **kwargs):
+def efficientnet_b2(pretrained=True, progress=True, **kwargs):
     return _efficientnet('efficientnet_b2', pretrained, progress, **kwargs)
 
 
 @mlconfig.register
-def efficientnet_b3(pretrained=False, progress=True, **kwargs):
+def efficientnet_b3(pretrained=True, progress=True, **kwargs):
     return _efficientnet('efficientnet_b3', pretrained, progress, **kwargs)
 
 
 @mlconfig.register
-def efficientnet_b4(pretrained=False, progress=True, **kwargs):
+def efficientnet_b4(pretrained=True, progress=True, **kwargs):
     return _efficientnet('efficientnet_b4', pretrained, progress, **kwargs)
 
 
 @mlconfig.register
-def efficientnet_b5(pretrained=False, progress=True, **kwargs):
+def efficientnet_b5(pretrained=True, progress=True, **kwargs):
     return _efficientnet('efficientnet_b5', pretrained, progress, **kwargs)
 
 
