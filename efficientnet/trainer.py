@@ -97,6 +97,14 @@ class Trainer(AbstractTrainer):
 
             train_loader.set_postfix_str(f'train loss: {train_loss}, train acc: {train_acc}.')
 
+        with open("log.txt", "a+") as f:
+            f.seek(0)
+            data = f.read(100)
+            if len(data) > 0:
+                f.write("\n")
+
+            f.write("Training: loss %.5f \t acc %.5f" %(train_loss, train_acc))
+
         return train_loss, train_acc
 
     def evaluate(self):
@@ -118,6 +126,14 @@ class Trainer(AbstractTrainer):
                 valid_acc.update(output, target)
 
                 valid_loader.set_postfix_str(f'valid loss: {valid_loss}, valid acc: {valid_acc}.')
+
+        with open("log.txt", "a+") as f:
+            f.seek(0)
+            data = f.read(100)
+            if len(data) > 0:
+                f.write("\n")
+
+            f.write("Evaluation: loss %.5f \t acc %.5f" %(valid_loss, valid_acc))
 
         return valid_loss, valid_acc
 
