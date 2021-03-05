@@ -80,7 +80,7 @@ class Trainer(AbstractTrainer):
         train_loss = Average()
         train_acc = Accuracy()
 
-        train_loader = tqdm(self.train_loader, ncols=0, desc='Train')
+        train_loader = tqdm(self.train_loader, ncols=0, desc='Train', position=0, leave=True)
         for images, target in train_loader:
             images = images.to(self.device, non_blocking=True)
             target = target.to(self.device, non_blocking=True)
@@ -106,7 +106,7 @@ class Trainer(AbstractTrainer):
         valid_acc = Accuracy()
 
         with torch.no_grad():
-            valid_loader = tqdm(self.valid_loader, desc='Validate', ncols=0)
+            valid_loader = tqdm(self.valid_loader, desc='Validate', ncols=0, position=0, leave=True)
             for images, target in valid_loader:
                 images = images.to(self.device, non_blocking=True)
                 target = target.to(self.device, non_blocking=True)
