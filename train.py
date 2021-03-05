@@ -21,7 +21,6 @@ def parse_args():
 	parser.add_argument('--world-size', type=int, default=1)
 	parser.add_argument('--rank', type=int, default=0)
 
-
 	return parser.parse_args()
 
 

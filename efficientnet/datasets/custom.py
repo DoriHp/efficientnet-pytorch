@@ -2,16 +2,17 @@ import os
 from typing import List
 
 import mlconfig
-from PIL import Image
 from torch.utils import data
-from torchvision import datasets
-from torchvision import transforms
 import pandas as pd
 
 from ..utils import distributed_is_initialized
 
-class CSVLoader(data.Dataset):
-    def __init__(self, csv_path, transform = None):
+import cv2
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
+
+class CSVparser(data.Dataset):
+    def __init__(self, csv_path, transform=None):
         self.df = pd.read_csv(csv_path)
         self.transform = transform
         self.class2index = {"normal": 0, "abnormal": 1}
@@ -20,12 +21,15 @@ class CSVLoader(data.Dataset):
         return len(self.df)
 
     def __getitem__(self, index):
-        filename = self.df["filename"][index]
+        filepath = self.df["filepath"][index]
         label = self.class2index[self.df["label"][index]]
-        image = Image.open(filename).convert("RGB")
+        image = cv2.imread(filepath)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         if self.transform is not None:
-            image = self.transform(image)
-        return image, label
+            image = self.transform(image=image)
+            return image['image'], label
+        else:
+            return image, label
 
 @mlconfig.register
 class CustomDatasetLoader(data.DataLoader):
@@ -38,27 +42,25 @@ class CustomDatasetLoader(data.DataLoader):
                  mean: List[float] = [0.485, 0.456, 0.406],
                  std: List[float] = [0.229, 0.224, 0.225],
                  **kwargs):
-        normalize = transforms.Normalize(mean=mean, std=std)
 
         if train:
-            transform = transforms.Compose([
-                transforms.RandomResizedCrop(image_size, interpolation=Image.BICUBIC),
-                transforms.RandomHorizontalFlip(),
-                transforms.ColorJitter(brightness=0.2, contrast=0.2),
-                transforms.ToTensor(),
-                normalize,
+            transform = A.Compose([
+                A.HorizontalFlip(p=0.5),
+                A.CLAHE(),
+                A.InvertImg(),
+                A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2),
+                A.Normalize(mean=mean, std=std),
+                ToTensorV2(),
             ])
         else:
-            transform = transforms.Compose([
-                transforms.Resize(image_size + 32, interpolation=Image.BICUBIC),
-                transforms.CenterCrop(image_size),
-                transforms.ToTensor(),
-                normalize,
+            transform = A.Compose([
+                A.Normalize(mean=mean, std=std),
+                ToTensorV2(),
             ])
 
         csv_path = os.path.join(root, "train.csv") if train else os.path.join(root, "valid.csv")
 
-        dataset = CSVLoader(csv_path=csv_path, transform=transform)
+        dataset = CSVparser(csv_path=csv_path, transform=transform)
 
         sampler = None
         if train and distributed_is_initialized():

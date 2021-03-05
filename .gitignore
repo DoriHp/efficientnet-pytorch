@@ -107,3 +107,5 @@ data/
 experiments/
 logs/
 weights/
+backup/
+*.csv

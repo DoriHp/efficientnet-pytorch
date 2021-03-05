@@ -81,19 +81,19 @@ class Trainer(AbstractTrainer):
         train_acc = Accuracy()
 
         train_loader = tqdm(self.train_loader, ncols=0, desc='Train')
-        for x, y in train_loader:
-            x = x.to(self.device)
-            y = y.to(self.device)
+        for images, target in train_loader:
+            images = images.to(self.device, non_blocking=True)
+            target = target.to(self.device, non_blocking=True)
 
-            output = self.model(x)
-            loss = F.cross_entropy(output, y)
+            output = self.model(images)
+            loss = F.cross_entropy(output, target)
 
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
 
-            train_loss.update(loss.item(), number=x.size(0))
-            train_acc.update(output, y)
+            train_loss.update(loss.item(), number=images.size(0))
+            train_acc.update(output, target)
 
             train_loader.set_postfix_str(f'train loss: {train_loss}, train acc: {train_acc}.')
 
@@ -107,15 +107,15 @@ class Trainer(AbstractTrainer):
 
         with torch.no_grad():
             valid_loader = tqdm(self.valid_loader, desc='Validate', ncols=0)
-            for x, y in valid_loader:
-                x = x.to(self.device)
-                y = y.to(self.device)
+            for images, target in valid_loader:
+                images = images.to(self.device, non_blocking=True)
+                target = target.to(self.device, non_blocking=True)
 
-                output = self.model(x)
-                loss = F.cross_entropy(output, y)
+                output = self.model(images)
+                loss = F.cross_entropy(output, target)
 
-                valid_loss.update(loss.item(), number=x.size(0))
-                valid_acc.update(output, y)
+                valid_loss.update(loss.item(), number=images.size(0))
+                valid_acc.update(output, target)
 
                 valid_loader.set_postfix_str(f'valid loss: {valid_loss}, valid acc: {valid_acc}.')
 
