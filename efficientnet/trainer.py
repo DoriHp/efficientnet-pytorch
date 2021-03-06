@@ -103,7 +103,7 @@ class Trainer(AbstractTrainer):
             if len(data) > 0:
                 f.write("\n")
 
-            f.write("Training: loss %.5f \t acc %.5f" %(train_loss, train_acc))
+            f.write("Training: loss %.5f \t acc %.5f" %(train_loss.value, train_acc.value))
 
         return train_loss, train_acc
 
@@ -133,7 +133,7 @@ class Trainer(AbstractTrainer):
             if len(data) > 0:
                 f.write("\n")
 
-            f.write("Evaluation: loss %.5f \t acc %.5f" %(valid_loss, valid_acc))
+            f.write("Evaluation: loss %.5f \t acc %.5f" %(valid_loss.value, valid_acc.value))
 
         return valid_loss, valid_acc
 
