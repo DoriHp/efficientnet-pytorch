@@ -149,8 +149,8 @@ class Trainer(AbstractTrainer):
         }
 
         dirname = os.path.dirname(f)
-        if dirname:
-            os.makedirs(dirname, exist_ok=True)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
 
         torch.save(checkpoint, f)
 
