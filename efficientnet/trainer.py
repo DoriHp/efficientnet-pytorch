@@ -1,6 +1,7 @@
 import os
 import shutil
 from abc import ABCMeta, abstractmethod
+import math
 
 import mlconfig
 import torch
@@ -83,7 +84,10 @@ class Trainer(AbstractTrainer):
         train_loss = Average()
         train_acc = Accuracy()
 
-        train_loader = tqdm(self.train_loader, ncols=0, desc='Train', position=0, leave=True)
+        # Get length of dataloadet
+        iterations = math.ceil(len(self.train_loader.dataset) / self.train_loader.batch_size)
+
+        train_loader = tqdm(self.train_loader, total=iterations, desc='Train', position=0, leave=True)
         for images, target in train_loader:
             images = images.to(self.device, non_blocking=True)
             target = target.to(self.device, non_blocking=True)
@@ -116,8 +120,10 @@ class Trainer(AbstractTrainer):
         valid_loss = Average()
         valid_acc = Accuracy()
 
+        iterations = math.ceil(len(self.train_loader.dataset) / self.train_loader.batch_size)
+
         with torch.no_grad():
-            valid_loader = tqdm(self.valid_loader, desc='Validate', ncols=0, position=0, leave=True)
+            valid_loader = tqdm(self.valid_loader, total=iterations, desc='Validate', position=0, leave=True)
             for images, target in valid_loader:
                 images = images.to(self.device, non_blocking=True)
                 target = target.to(self.device, non_blocking=True)

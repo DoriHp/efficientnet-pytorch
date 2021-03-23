@@ -53,7 +53,8 @@ def main():
 		model = nn.parallel.DistributedDataParallel(model)
 	else:
 		if args.data_parallel:
-			model = nn.DataParallel(model)
+			num_gpus = torch.cuda.device_count()
+			model = nn.DataParallel(model, device_ids=[i for i in range(num_gpus)])
 		model.to(device)
 
 	lr0 = 0.0001 * config.dataset.batch_size
