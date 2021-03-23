@@ -24,7 +24,7 @@ class CSVparser(data.Dataset):
         filepath = self.df["filepath"][index]
         label = self.class2index[self.df["label"][index]]
         image = cv2.imread(filepath)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.uint8)
         if self.transform is not None:
             image = self.transform(image=image)
             return image['image'], label
@@ -43,19 +43,25 @@ class CustomDatasetLoader(data.DataLoader):
                  std: List[float] = [0.229, 0.224, 0.225],
                  **kwargs):
 
+        self.batch_size = batch_size
+
         if train:
             transform = A.Compose([
-                A.HorizontalFlip(p=0.5),
-                A.CLAHE(),
-                A.InvertImg(),
-                A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2),
-                A.Normalize(mean=mean, std=std),
-                ToTensorV2(),
+                A.RandomResizedCrop(height=image_size, width=image_size, scale=(0.7, 1.0), ratio=(1.0, 1.0), p=1.0),
+                A.HorizontalFlip(p=0.85),
+                A.Rotate(limit=20, p=0.6),
+                A.CLAHE(clip_limit=4.0, p=0.85),
+                A.GaussianBlur(blur_limit=(1, 3), p=0.4),
+                A.RandomBrightnessContrast(brightness_limit=0.3, contrast_limit=0.3, p=0.6),
+                A.Normalize(mean=mean, std=std, p=1.0),
+                ToTensorV2(p=1.0),
             ])
         else:
             transform = A.Compose([
+                A.Resize(height=image_size, width=image_size, p=1.0),
+                A.HorizontalFlip(p=0.5),
                 A.Normalize(mean=mean, std=std),
-                ToTensorV2(),
+                ToTensorV2(p=1.0),
             ])
 
         csv_path = os.path.join(root, "train.csv") if train else os.path.join(root, "valid.csv")
@@ -67,7 +73,20 @@ class CustomDatasetLoader(data.DataLoader):
             sampler = data.distributed.DistributedSampler(dataset)
 
         super(CustomDatasetLoader, self).__init__(dataset,
-                                                    batch_size=batch_size,
-                                                    shuffle=(sampler is None),
+                                                    batch_size=self.batch_size,
+                                                    shuffle=train,
                                                     sampler=sampler,
                                                     **kwargs)
+
+if __name__ == '__main__':
+    org_img = cv2.imread("test.png")
+    img = cv2.cvtColor(org_img, cv2.COLOR_BGR2RGB)
+    transform = A.Compose([
+                # A.Resize(height=320, width=320),
+                A.RandomResizedCrop(height=320, width=320, scale=(0.8, 1.0), ratio=(1.0, 1.0)),
+            ])
+    img = transform(image=img)
+    cv2.imshow("Original", org_img)
+    cv2.imshow("Augmented", img['image'])
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()

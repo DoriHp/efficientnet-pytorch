@@ -34,10 +34,13 @@ class Trainer(AbstractTrainer):
                  valid_loader: data.DataLoader, scheduler: optim.lr_scheduler._LRScheduler, device: torch.device,
                  log_dir: str, num_epochs: int, output_dir: str):
         self.model = model
-        self.optimizer = optimizer
-        self.scheduler = scheduler
         self.train_loader = train_loader
         self.valid_loader = valid_loader
+
+        # Lr handler
+        self.optimizer = optimizer
+        self.scheduler = scheduler
+        
         self.device = device
         self.num_epochs = num_epochs
         self.output_dir = output_dir
@@ -51,7 +54,6 @@ class Trainer(AbstractTrainer):
 
         epochs = trange(self.epoch, self.num_epochs + 1, desc='Epoch', ncols=0)
         for self.epoch in epochs:
-            self.scheduler.step()
 
             train_loss, train_acc = self.train()
             valid_loss, valid_acc = self.evaluate()
@@ -73,6 +75,7 @@ class Trainer(AbstractTrainer):
             epochs.set_postfix_str(f'train loss: {train_loss}, train acc: {train_acc}, '
                                    f'valid loss: {valid_loss}, valid acc: {valid_acc}, '
                                    f'best valid acc: {self.best_acc:.2f}')
+            self.scheduler.step()
 
     def train(self):
         self.model.train()
@@ -88,9 +91,9 @@ class Trainer(AbstractTrainer):
             output = self.model(images)
             loss = F.cross_entropy(output, target)
 
-            self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            self.optimizer.zero_grad()
 
             train_loss.update(loss.item(), number=images.size(0))
             train_acc.update(output, target)

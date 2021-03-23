@@ -1,11 +1,12 @@
 import argparse
+import math
 
 import mlconfig
 import torch
 from torch import distributed, nn
 
 from efficientnet.utils import distributed_is_initialized
-
+import torch.optim.lr_scheduler as lr_scheduler
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -55,8 +56,12 @@ def main():
 			model = nn.DataParallel(model)
 		model.to(device)
 
-	optimizer = config.optimizer(model.parameters())
-	scheduler = config.scheduler(optimizer)
+	lr0 = 0.0001 * config.dataset.batch_size
+	lf = lambda x: ((1 + math.cos(x * math.pi / config.trainer.num_epochs)) / 2) * (1 - 0.01) + 0.01  # cosine
+
+	# optimizer = config.optimizer(model.parameters(), lr=lr0)
+	optimizer = config.optimizer(model.parameters(), lr=lr0, betas=(0.937, 0.999))
+	scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
 
 	train_loader = config.dataset(train=True)
 	valid_loader = config.dataset(train=False)
