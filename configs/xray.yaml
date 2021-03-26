@@ -11,10 +11,10 @@ model:
 dataset:
   name: XRayDatasetLoader
   root: data
-  batch_size: 1
+  batch_size: 2
   label_smoothing: 0.01
   mixup_prob: -1.0
-  image_size: 24
+  image_size: 112
   num_workers: 1
 
 optimizer:

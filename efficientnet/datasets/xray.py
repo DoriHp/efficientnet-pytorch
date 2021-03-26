@@ -57,7 +57,7 @@ class DatasetMixin(data.Dataset):
         raise NotImplementedError
 
 class CSVparser(DatasetMixin):
-    def __init__(self, csv_path, transform=None, is_train: bool=False, mixup_prob: float=0.5, label_smoothing: float = 0.0):
+    def __init__(self, csv_path, transform=None, is_train: bool=False, mixup_prob: float=0.0, label_smoothing: float = 0.0):
         self.df = pd.read_csv(csv_path)
         self.transform = transform
         self.class2index = {"normal": 0, "abnormal": 1}
@@ -73,7 +73,13 @@ class CSVparser(DatasetMixin):
         filepath = self.df["filepath"][idx]
         label = self.class2index[self.df["label"][idx]]
         img = cv2.imread(filepath)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.uint8)
+
+        if self.transform:
+            img = self.transform(image=img)["image"]
+
+        # To NCWH input format
+        img = torch.tensor(np.transpose(img, (2, 0, 1)).astype(np.float32))
 
         if self.is_train and self.label_smoothing > 0:
             if label == 0:
@@ -97,10 +103,7 @@ class CSVparser(DatasetMixin):
 
             label = label * p + label2 * (1 - p)
 
-        label_logit = torch.tensor([1 - label, label], dtype=torch.float32)
-        img = torch.tensor(np.transpose(img, (2, 0, 1)).astype(np.float32))
-
-        return img, label_logit
+        return img, torch.tensor(label, dtype=torch.long)
         
 
 @mlconfig.register
@@ -121,21 +124,20 @@ class XRayDatasetLoader(data.DataLoader):
 
         if train:
             transform = A.Compose([
-                A.RandomResizedCrop(height=image_size, width=image_size, scale=(0.7, 1.0), ratio=(1.0, 1.0), p=1.0),
+                A.Resize(height=image_size, width=image_size, p=1.0),
                 A.HorizontalFlip(p=0.85),
-                A.Rotate(limit=20, p=0.6),
+                A.ShiftScaleRotate(
+                    shift_limit=0.0625, scale_limit=0.1, rotate_limit=10, p=0.5
+                ),
                 A.CLAHE(clip_limit=4.0, p=0.85),
-                A.GaussianBlur(blur_limit=(1, 3), p=0.4),
                 A.RandomBrightnessContrast(brightness_limit=0.3, contrast_limit=0.3, p=0.6),
                 A.Normalize(mean=mean, std=std, p=1.0),
-                ToTensorV2(p=1.0),
             ])
         else:
             transform = A.Compose([
                 A.Resize(height=image_size, width=image_size, p=1.0),
                 A.HorizontalFlip(p=0.5),
                 A.Normalize(mean=mean, std=std),
-                ToTensorV2(p=1.0),
             ])
 
         csv_path = os.path.join(root, "train.csv") if train else os.path.join(root, "valid.csv")
