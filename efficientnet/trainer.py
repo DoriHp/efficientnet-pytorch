@@ -120,7 +120,7 @@ class Trainer(AbstractTrainer):
         valid_loss = Average()
         valid_acc = Accuracy()
 
-        iterations = math.ceil(len(self.train_loader.dataset) / self.train_loader.batch_size)
+        iterations = math.ceil(len(self.valid_loader.dataset) / self.valid_loader.batch_size)
 
         with torch.no_grad():
             valid_loader = tqdm(self.valid_loader, total=iterations, desc='Validate', position=0, leave=True)
